@@ -1,6 +1,6 @@
 [submodule "FV3"]
 	path = FV3
-	url = gerrit:FV3
+	url = https://github.com/CWA-NWP/ufsatm.git
 [submodule "NEMS"]
 	path = NEMS
-	url = gerrit:NEMS
+	url = https://github.com/CWA-NWP/NEMS.git

@@ -33,8 +33,11 @@ src/configure configure.fv3.$BUILD_TARGET $BUILD_TARGET/fv3
 
 # Load the "module" command, purge modules, and load modules
 source $PATHNEMS/src/conf/modules.nems.sh
-if [[ $BUILD_TARGET != "macosx.gnu" ]]; then
-  module list
+if [[ $BUILD_TARGET != "macosx.gnu" ]] &&
+   [[ $BUILD_TARGET != "fx10" ]] &&
+   [[ $BUILD_TARGET != "fx100" ]] &&
+   [[ $BUILD_TARGET != "fx1000" ]]; then
+module list
 fi
 
 # Copy configuration to FV3:
@@ -45,15 +48,21 @@ cp -fp $PATHNEMS/src/conf/modules.nems $PATHTR/conf/modules.fv3
 # Build FV3
 cd $PATHTR
 if [[ $BUILD_TARGET == "macosx.gnu" ]]; then
-  if [ $clean_before = YES ] ; then make clean ; fi
-  make ${MAKE_OPT} -j 8 nemsinstall
+  if [ $clean_before = YES ] ; then
+    ( cd $PATHNEMS/src && make clean )
+    make clean
+  fi
+  make ${MAKE_OPT} -j 8 nemsinstall || exit $?
 else
-  if [ $clean_before = YES ] ; then gmake clean ; fi
+  if [ $clean_before = YES ] ; then
+    ( cd $PATHNEMS/src && gmake clean )
+    gmake clean
+  fi
   # CISL kills your shell if using too much resources on the login node
   if [[ $BUILD_TARGET == cheyenne.* ]]; then
-    gmake ${MAKE_OPT} -j 3 nemsinstall
+    gmake ${MAKE_OPT} -j 3 nemsinstall || exit $?
   else
-    gmake ${MAKE_OPT} -j 8 nemsinstall
+    gmake ${MAKE_OPT} -j 8 nemsinstall || exit $?
   fi
 fi
 
@@ -63,9 +72,9 @@ export COMP=FV3
 export COMP_SRCDIR=$PATHTR
 export COMP_BINDIR=$PATHTR/FV3_INSTALL
 if [[ $BUILD_TARGET == "macosx.gnu" ]]; then
-  make nems COMP=,fv3, FV3_DIR=$PATHTR ${MAKE_OPT}
+  make nems COMP=,fv3, FV3_DIR=$PATHTR ${MAKE_OPT} || exit $?
 else
-  gmake nems COMP=,fv3, FV3_DIR=$PATHTR ${MAKE_OPT}
+  gmake nems COMP=,fv3, FV3_DIR=$PATHTR ${MAKE_OPT} || exit $?
 fi
 
 cp ../exe/NEMS.x ${PATHTR}/../tests/$BUILD_NAME.exe
